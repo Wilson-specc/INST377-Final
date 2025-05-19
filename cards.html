@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search | Finder Cards Page</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Verdana, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #eafee9;
+    }
+
+    nav {
+      margin-bottom: 30px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      color: darkslategray;
+    }
+
+    nav a:hover {
+      color: mediumseagreen;
+      transition: color 0.2s ease;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: darkgreen;
+    }
+
+    .input {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 250px;
+    }
+
+    .launch-button {
+      background-color: crimson;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .launch-button:hover {
+      background-color: forestgreen;
+    }
+
+    .notif-banner {
+      margin-top: 10px;
+      color: crimson;
+      font-weight: bold;
+    }
+
+    .slide {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .frame {
+      background-color: #ffffff;
+      border: 2px dashed darkolivegreen;
+      border-radius: 14px;
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0, 128, 0, 0.15);
+    }
+
+    .frame img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+
+    canvas {
+      margin-top: 40px;
+      max-width: 800px;
+      width: 100%;
+      border: 2px solid darkslategray;
+      border-radius: 10px;
+      background-color: #fff;
+      padding: 20px;
+    }
+
+    footer {
+      margin-top: 40px;
+      background-color: crimson;
+      padding: 12px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header><h1>Card Search</h1></header>
+  <nav>
+    <a href="index.html">About</a>
+    <a href="cards.html">Search </a>
+    <a href="about.html">Project Scoop</a>
+  </nav>
+
+  <input type="text" id="pokeRequest" class="input" placeholder="Blast a name: ">
+  <button onclick="initiateSearch()" class="launch-button">Scan Cards</button>
+  <p class="notif-banner" id="statusMsg"></p>
+
+  <canvas id="Graph"></canvas>
+
+  <div class="swiper slide">
+    <div class="swiper-wrapper" id="scanZone"></div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+  </div>
+
+  <footer><p> Poke Finder Tool</p></footer>
+
+  <script>
+    let blipCount = 0;
+    let radar;
+    let swiper;
+
+    async function initiateSearch() {
+      const queryName = document.getElementById("pokeRequest").value.trim().toLowerCase();
+      const outputDeck = document.getElementById("scanZone");
+      const statusPanel = document.getElementById("statusMsg");
+
+      if (!queryName) {
+        alert("input required.");
+        return;
+      }
+
+      if (blipCount >= 5) {
+        outputDeck.innerHTML = "";
+        blipCount = 0;
+        statusPanel.innerText = "Search deck cleared. Ready for next round.";
+        return;
+      }
+
+      const url = `https://api.pokemontcg.io/v2/cards?q=name:${queryName}`;
+      const headers = {
+        "X-Api-Key": "3a9e487c-e7c4-45c3-bdc9-e6511a5b1daf"
+      };
+
+      try {
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+        outputDeck.innerHTML = "";
+
+        if (data.data.length === 0) {
+          outputDeck.innerHTML = `<div class='swiper-slide frame'><p>No results for "${queryName}".</p></div>`;
+          return;
+        }
+
+        const cardTotal = data.data.length;
+
+        data.data.forEach(card => {
+          const slide = document.createElement("div");
+          slide.className = "swiper-slide frame";
+
+          const cardImage = document.createElement("img");
+          cardImage.src = card.images.small;
+          cardImage.alt = card.name;
+
+          const nameLabel = document.createElement("p");
+          nameLabel.textContent = card.name;
+
+          slide.appendChild(cardImage);
+          slide.appendChild(nameLabel);
+          outputDeck.appendChild(slide);
+        });
+
+        await fetch('http://localhost:3000/searches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pokemon_name: queryName, card_count: cardTotal })
+        });
+
+        blipCount++;
+        statusPanel.innerText = `Card scans used: ${blipCount}/5`;
+
+        Loader();
+        if (swiper) swiper.destroy(true, true);
+        swiper = new Swiper('.swiper', {
+          loop: true,
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert("Search module error.");
+      }
+    }
+
+    async function Loader() {
+      try {
+        const res = await fetch('http://localhost:3000/searches');
+        const intel = await res.json();
+        console.log("Input:", intel);
+
+        if (!Array.isArray(intel)) {
+          console.error("data failure:", intel);
+          return;
+        }
+
+        const names = intel.map(entry => entry.pokemon_name);
+        const counts = intel.map(entry => entry.card_count);
+
+        const radarZone = document.getElementById('Graph').getContext('2d');
+        if (radar) radar.destroy();
+
+        radar = new Chart(radarZone, {
+          type: 'bar',
+          data: {
+            labels: names,
+            datasets: [{
+              label: 'Card Variants Tracked',
+              data: counts,
+              backgroundColor: '#2e8b57'
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error(" update error:", err);
+      }
+    }
+
+    Loader();
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About | Pokémon Card Finder</title>
+  <style>
+    body {
+      font-family: Verdana, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #eafee9;
+    }
+
+    nav {
+      margin-bottom: 30px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      color: darkslategray;
+    }
+
+    nav a:hover {
+      color: mediumseagreen;
+      transition: color 0.2s ease;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: darkgreen;
+    }
+
+    .slug-page {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 2px dashed darkolivegreen;
+      border-radius: 14px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(50, 205, 50, 0.2);
+    }
+
+    .splotch {
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .splotch h2 {
+      color: darkgreen;
+      margin-bottom: 10px;
+    }
+
+    ul {
+      text-align: left;
+      padding-left: 20px;
+    }
+
+    footer {
+      margin-top: 40px;
+      background-color: crimson;
+      padding: 12px;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header><h1>About</h1></header>
+  <nav>
+    <a href="index.html">About </a>
+    <a href="cards.html">Search </a>
+    <a href="about.html">Project Scoop</a>
+  </nav>
+
+  <div class="slug-page">
+    <div class="splotch">
+      <h2>What Brought This Idea?</h2>
+      <p>
+        New Pokémon TCG players often don’t know how many different card variations exist for their favorites.
+        That makes collecting chaotic — until now.
+      </p>
+    </div>
+
+    <div class="splotch">
+      <h2>What This Search Does</h2>
+      <p>
+        Using the Pokémon TCG API, this app fetches and shows all card variations for any Pokémon name you type.
+        You get visuals, data, and plenty of collection clarity.
+      </p>
+    </div>
+
+    <div class="splotch">
+      <h2>Tools</h2>
+      <ul>
+        <li>HTML, CSS, JavaScript</li>
+        <li>Pokémon TCG API (external data source)</li>
+        <li>Fetch API for retreiving  card data</li>
+        <li>Supabase for backend memory</li>
+        <li>Chart.js for visual stats </li>
+      </ul>
+    </div>
+  </div>
+
+  <footer><p> Poke Finder Tool</p></footer>
+</body>
+</html>
